@@ -1,0 +1,19 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# Notification daemon: owns the surface in the top-right corner, which is only
+# mapped while there is something to show.
+rust_binary(
+    name = "notification",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        "//crates/config",
+        "//crates/ui",
+        "//crates/wayland",
+        "@crates//:anyhow",
+        "@crates//:egui",
+        "@crates//:env_logger",
+        "@crates//:serde",
+    ],
+)

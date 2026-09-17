@@ -1,0 +1,23 @@
+# Build
+build --incompatible_disallow_empty_glob
+# The only cc toolchain is the hermetic LLVM one registered in MODULE.bazel.
+# Autodetection of a host toolchain is disabled so resolution cannot pick one.
+build --incompatible_enable_cc_toolchain_resolution
+build --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
+build --@rules_rust//rust/settings:clippy.toml=//:clippy.toml
+
+# Test
+test --test_output=errors
+test --verbose_failures
+
+# `bazel build --config=rustfmt //...` fails on unformatted code.
+build:rustfmt --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build:rustfmt --output_groups=+rustfmt_checks
+
+# `bazel build --config=clippy //...` runs clippy on every crate.
+build:clippy --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build:clippy --output_groups=+clippy_checks
+
+# Per-user overrides, not checked in.
+try-import %workspace%/user.bazelrc

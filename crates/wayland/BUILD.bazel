@@ -1,0 +1,18 @@
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "wayland",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        "@crates//:anyhow",
+        "@crates//:egui",
+        "@crates//:egui-wgpu",
+        "@crates//:log",
+        "@crates//:pollster",
+        "@crates//:raw-window-handle",
+        "@crates//:smithay-client-toolkit",
+        "@crates//:wgpu",
+    ],
+)

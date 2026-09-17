@@ -1,0 +1,21 @@
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "ui",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        "//crates/hypr",
+        "@crates//:anyhow",
+        "@crates//:egui",
+        "@crates//:log",
+        "@crates//:serde_json",
+    ],
+)
+
+rust_test(
+    name = "ui_test",
+    size = "small",
+    crate = ":ui",
+)

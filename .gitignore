@@ -1,0 +1,4 @@
+/bazel-*
+/user.bazelrc
+/rust-project.json
+/.rules_rust_analyzer

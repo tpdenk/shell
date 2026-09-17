@@ -1,0 +1,19 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# Application launcher: a centered overlay, spawned on demand, exits on
+# selection or dismissal.
+rust_binary(
+    name = "launcher",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        "//crates/config",
+        "//crates/ui",
+        "//crates/wayland",
+        "@crates//:anyhow",
+        "@crates//:egui",
+        "@crates//:env_logger",
+        "@crates//:serde",
+    ],
+)

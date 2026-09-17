@@ -1,0 +1,20 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# Top bar, anchored to the top edge with an exclusive zone.
+rust_binary(
+    name = "bar",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        "//crates/config",
+        "//crates/hypr",
+        "//crates/ui",
+        "//crates/wayland",
+        "@crates//:anyhow",
+        "@crates//:egui",
+        "@crates//:env_logger",
+        "@crates//:log",
+        "@crates//:serde",
+    ],
+)

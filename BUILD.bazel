@@ -1,0 +1,20 @@
+exports_files([
+    "clippy.toml",
+    "rustfmt.toml",
+])
+
+# Every component: `bazel build //:all_components`.
+filegroup(
+    name = "all_components",
+    srcs = [
+        "//bar",
+        "//launcher",
+        "//notification",
+    ],
+)
+
+# `bazel run //:gen_rust_project` writes rust-project.json for rust-analyzer.
+alias(
+    name = "gen_rust_project",
+    actual = "@rules_rust//tools/rust_analyzer:gen_rust_project",
+)
