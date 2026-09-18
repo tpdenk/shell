@@ -10,10 +10,13 @@ use smithay_client_toolkit::reexports::calloop::timer::{TimeoutAction, Timer};
 use smithay_client_toolkit::reexports::calloop::{LoopHandle, LoopSignal, RegistrationToken};
 use smithay_client_toolkit::reexports::client::globals::GlobalList;
 use smithay_client_toolkit::reexports::client::protocol::{
-    wl_output, wl_pointer, wl_seat, wl_surface,
+    wl_keyboard, wl_output, wl_pointer, wl_seat, wl_surface,
 };
 use smithay_client_toolkit::reexports::client::{Connection, QueueHandle};
 use smithay_client_toolkit::registry::{ProvidesRegistryState, RegistryState};
+use smithay_client_toolkit::seat::keyboard::{
+    KeyEvent, KeyboardHandler, Keysym, Modifiers as KeyModifiers, RawModifiers,
+};
 use smithay_client_toolkit::seat::pointer::{
     PointerEvent, PointerEventKind, PointerHandler, ThemeSpec, ThemedPointer,
 };
@@ -43,6 +46,7 @@ pub(crate) struct State {
     egui: egui::Context,
     input: InputState,
     pointer: Option<ThemedPointer>,
+    keyboard: Option<wl_keyboard::WlKeyboard>,
     cursor: egui::CursorIcon,
     loop_handle: LoopHandle<'static, State>,
     loop_signal: LoopSignal,
@@ -95,6 +99,7 @@ impl State {
             egui,
             input: InputState::default(),
             pointer: None,
+            keyboard: None,
             cursor: egui::CursorIcon::Default,
             loop_handle,
             loop_signal,
@@ -284,6 +289,13 @@ impl State {
             log::debug!("failed to set cursor {:?}: {err}", self.cursor);
         }
     }
+
+    /// Single path for presses, compositor repeats, calloop repeats, and
+    /// releases.
+    fn key(&mut self, event: &KeyEvent, pressed: bool) {
+        self.input.push_key(event, pressed);
+        self.request_redraw();
+    }
 }
 
 impl LayerShellHandler for State {
@@ -390,19 +402,33 @@ impl SeatHandler for State {
         seat: wl_seat::WlSeat,
         capability: Capability,
     ) {
-        if capability != Capability::Pointer || self.pointer.is_some() {
-            return;
-        }
-        let cursor_surface = self.compositor.create_surface(qh);
-        match self.seat_state.get_pointer_with_theme::<State, ()>(
-            qh,
-            &seat,
-            self.shm.wl_shm(),
-            cursor_surface,
-            ThemeSpec::default(),
-        ) {
-            Ok(pointer) => self.pointer = Some(pointer),
-            Err(err) => log::error!("failed to create pointer: {err}"),
+        match capability {
+            Capability::Pointer if self.pointer.is_none() => {
+                let cursor_surface = self.compositor.create_surface(qh);
+                match self.seat_state.get_pointer_with_theme::<State, ()>(
+                    qh,
+                    &seat,
+                    self.shm.wl_shm(),
+                    cursor_surface,
+                    ThemeSpec::default(),
+                ) {
+                    Ok(pointer) => self.pointer = Some(pointer),
+                    Err(err) => log::error!("failed to create pointer: {err}"),
+                }
+            }
+            Capability::Keyboard if self.keyboard.is_none() => {
+                match self.seat_state.get_keyboard_with_repeat(
+                    qh,
+                    &seat,
+                    None,
+                    self.loop_handle.clone(),
+                    Box::new(|state: &mut State, _kbd, event| state.key(&event, true)),
+                ) {
+                    Ok(keyboard) => self.keyboard = Some(keyboard),
+                    Err(err) => log::error!("failed to create keyboard: {err}"),
+                }
+            }
+            _ => {}
         }
     }
 
@@ -413,9 +439,15 @@ impl SeatHandler for State {
         _seat: wl_seat::WlSeat,
         capability: Capability,
     ) {
-        if capability == Capability::Pointer {
+        match capability {
             // Dropping the themed pointer releases the wl_pointer.
-            self.pointer = None;
+            Capability::Pointer => self.pointer = None,
+            Capability::Keyboard => {
+                if let Some(keyboard) = self.keyboard.take() {
+                    keyboard.release();
+                }
+            }
+            _ => {}
         }
     }
 
@@ -443,6 +475,79 @@ impl PointerHandler for State {
         if redraw {
             self.request_redraw();
         }
+    }
+}
+
+impl KeyboardHandler for State {
+    // There is a single surface and `draw` already reports it as focused, so
+    // focus changes carry no information.
+    fn enter(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _surface: &wl_surface::WlSurface,
+        _serial: u32,
+        _raw: &[u32],
+        _keysyms: &[Keysym],
+    ) {
+    }
+
+    fn leave(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _surface: &wl_surface::WlSurface,
+        _serial: u32,
+    ) {
+    }
+
+    fn press_key(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _serial: u32,
+        event: KeyEvent,
+    ) {
+        self.key(&event, true);
+    }
+
+    fn repeat_key(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _serial: u32,
+        event: KeyEvent,
+    ) {
+        self.key(&event, true);
+    }
+
+    fn release_key(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _serial: u32,
+        event: KeyEvent,
+    ) {
+        self.key(&event, false);
+    }
+
+    fn update_modifiers(
+        &mut self,
+        _conn: &Connection,
+        _qh: &QueueHandle<Self>,
+        _keyboard: &wl_keyboard::WlKeyboard,
+        _serial: u32,
+        modifiers: KeyModifiers,
+        _raw_modifiers: RawModifiers,
+        _layout: u32,
+    ) {
+        self.input.set_modifiers(modifiers);
+        self.request_redraw();
     }
 }
 

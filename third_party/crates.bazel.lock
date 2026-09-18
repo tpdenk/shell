@@ -1,5 +1,5 @@
 {
-  "checksum": "ce6adc8e3706b91472cb75ae1a33c9481e41bdbfe0c187179849243e6ef0d3cb",
+  "checksum": "0512ba32c6d55061d59fb732e51474dd28f8e939f8dcc2fe0b0a9295126e9f11",
   "conditions": {
     "aarch64-apple-darwin": [
       "aarch64-apple-darwin"
@@ -935,6 +935,51 @@
       ],
       "version": "2.13.2"
     },
+    "bstr 1.13.1": {
+      "common_attrs": {
+        "crate_features": [
+          "alloc",
+          "default",
+          "std",
+          "unicode"
+        ],
+        "deps": [
+          {
+            "id": "memchr 2.8.3",
+            "target": "memchr"
+          },
+          {
+            "id": "regex-automata 0.4.18",
+            "target": "regex_automata"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "bstr",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "bstr",
+      "package_url": "https://github.com/BurntSushi/bstr",
+      "repository": {
+        "Http": {
+          "sha256": "6bb31b46c14244e20ee9984b11bf5c992b91fb6939fea616e3512c8baecdbe5f",
+          "url": "https://static.crates.io/crates/bstr/1.13.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "bstr",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.13.1"
+    },
     "bumpalo 3.20.3": {
       "common_attrs": {
         "crate_features": [
@@ -1694,8 +1739,16 @@
             "target": "env_logger"
           },
           {
+            "id": "freedesktop-desktop-entry 0.8.3",
+            "target": "freedesktop_desktop_entry"
+          },
+          {
             "id": "log 0.4.34",
             "target": "log"
+          },
+          {
+            "id": "nucleo-matcher 0.3.1",
+            "target": "nucleo_matcher"
           },
           {
             "id": "pollster 1.0.1",
@@ -2767,6 +2820,60 @@
       ],
       "version": "0.12.5"
     },
+    "freedesktop-desktop-entry 0.8.3": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "bstr 1.13.1",
+            "target": "bstr"
+          },
+          {
+            "id": "log 0.4.34",
+            "target": "log"
+          },
+          {
+            "id": "memchr 2.8.3",
+            "target": "memchr"
+          },
+          {
+            "id": "thiserror 2.0.20",
+            "target": "thiserror"
+          },
+          {
+            "id": "unicase 2.9.0",
+            "target": "unicase"
+          },
+          {
+            "id": "xdg 3.0.0",
+            "target": "xdg"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "freedesktop_desktop_entry",
+      "license": "MPL-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MPL-2.0"
+      ],
+      "name": "freedesktop-desktop-entry",
+      "package_url": "https://github.com/pop-os/freedesktop-desktop-entry",
+      "repository": {
+        "Http": {
+          "sha256": "9cfa09933e03f1ced380ad639822d65cb59a1914217da6c72aa8db3563e94214",
+          "url": "https://static.crates.io/crates/freedesktop-desktop-entry/0.8.3/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "freedesktop_desktop_entry",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.8.3"
+    },
     "futures-core 0.3.34": {
       "common_attrs": {
         "crate_features": [
@@ -3720,25 +3827,10 @@
     "libc 0.2.189": {
       "build_script_attrs": {},
       "common_attrs": {
-        "crate_features": {
-          "common": [
-            "std"
-          ],
-          "selects": {
-            "aarch64-apple-darwin": [
-              "default"
-            ],
-            "aarch64-unknown-linux-gnu": [
-              "default"
-            ],
-            "x86_64-unknown-linux-gnu": [
-              "default"
-            ],
-            "x86_64-unknown-nixos-gnu": [
-              "default"
-            ]
-          }
-        },
+        "crate_features": [
+          "default",
+          "std"
+        ],
         "edition": "2021",
         "extra_deps": [
           ":build_script_build"
@@ -4039,29 +4131,11 @@
     },
     "memchr 2.8.3": {
       "common_attrs": {
-        "crate_features": {
-          "common": [
-            "alloc",
-            "std"
-          ],
-          "selects": {
-            "aarch64-apple-darwin": [
-              "default"
-            ],
-            "aarch64-unknown-linux-gnu": [
-              "default"
-            ],
-            "x86_64-pc-windows-msvc": [
-              "default"
-            ],
-            "x86_64-unknown-linux-gnu": [
-              "default"
-            ],
-            "x86_64-unknown-nixos-gnu": [
-              "default"
-            ]
-          }
-        },
+        "crate_features": [
+          "alloc",
+          "default",
+          "std"
+        ],
         "edition": "2021"
       },
       "library_target_name": "memchr",
@@ -4484,6 +4558,50 @@
         }
       ],
       "version": "0.2.0"
+    },
+    "nucleo-matcher 0.3.1": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "unicode-casefold",
+          "unicode-normalization",
+          "unicode-segmentation"
+        ],
+        "deps": [
+          {
+            "id": "memchr 2.8.3",
+            "target": "memchr"
+          },
+          {
+            "id": "unicode-segmentation 1.13.3",
+            "target": "unicode_segmentation"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "nucleo_matcher",
+      "license": "MPL-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MPL-2.0"
+      ],
+      "name": "nucleo-matcher",
+      "package_url": "https://github.com/helix-editor/nucleo",
+      "repository": {
+        "Http": {
+          "sha256": "bf33f538733d1a5a3494b836ba913207f14d9d4a1d3cd67030c5061bdd2cac85",
+          "url": "https://static.crates.io/crates/nucleo-matcher/0.3.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "nucleo_matcher",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.3.1"
     },
     "num-traits 0.2.19": {
       "build_script_attrs": {
@@ -5763,6 +5881,7 @@
         "crate_features": [
           "alloc",
           "dfa-onepass",
+          "dfa-search",
           "hybrid",
           "meta",
           "nfa-backtrack",
@@ -6692,17 +6811,31 @@
       "version": "1.16.1"
     },
     "smithay-client-toolkit 0.21.1": {
-      "build_script_attrs": {},
+      "build_script_attrs": {
+        "deps": [
+          {
+            "id": "pkg-config 0.3.34",
+            "target": "pkg_config"
+          }
+        ]
+      },
       "common_attrs": {
         "crate_features": [
+          "bytemuck",
           "calloop",
           "calloop-wayland-source",
-          "system"
+          "pkg-config",
+          "system",
+          "xkbcommon"
         ],
         "deps": [
           {
             "id": "bitflags 2.13.2",
             "target": "bitflags"
+          },
+          {
+            "id": "bytemuck 1.25.2",
+            "target": "bytemuck"
           },
           {
             "id": "calloop 0.14.4",
@@ -6759,6 +6892,10 @@
           {
             "id": "wayland-protocols-wlr 0.3.12",
             "target": "wayland_protocols_wlr"
+          },
+          {
+            "id": "xkbcommon 0.8.0",
+            "target": "xkbcommon"
           },
           {
             "id": "xkeysym 0.2.1",
@@ -7175,6 +7312,35 @@
         }
       ],
       "version": "0.5.1"
+    },
+    "unicase 2.9.0": {
+      "common_attrs": {
+        "edition": "2018"
+      },
+      "library_target_name": "unicase",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "unicase",
+      "package_url": "https://github.com/seanmonstar/unicase",
+      "repository": {
+        "Http": {
+          "sha256": "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142",
+          "url": "https://static.crates.io/crates/unicase/2.9.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "unicase",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "2.9.0"
     },
     "unicode-general-category 1.1.0": {
       "build_script_attrs": {},
@@ -9726,8 +9892,93 @@
       ],
       "version": "0.3.11"
     },
+    "xdg 3.0.0": {
+      "common_attrs": {
+        "edition": "2021"
+      },
+      "library_target_name": "xdg",
+      "license": "Apache-2.0 OR MIT",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "xdg",
+      "package_url": "https://github.com/whitequark/rust-xdg",
+      "repository": {
+        "Http": {
+          "sha256": "2fb433233f2df9344722454bc7e96465c9d03bff9d77c248f9e7523fe79585b5",
+          "url": "https://static.crates.io/crates/xdg/3.0.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "xdg",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "3.0.0"
+    },
+    "xkbcommon 0.8.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "memmap2",
+          "wayland"
+        ],
+        "deps": [
+          {
+            "id": "libc 0.2.189",
+            "target": "libc"
+          },
+          {
+            "id": "memmap2 0.9.11",
+            "target": "memmap2"
+          },
+          {
+            "id": "xkeysym 0.2.1",
+            "target": "xkeysym"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "xkbcommon",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "xkbcommon",
+      "package_url": "https://github.com/rust-x-bindings/xkbcommon-rs",
+      "repository": {
+        "Http": {
+          "sha256": "8d66ca9352cbd4eecbbc40871d8a11b4ac8107cfc528a6e14d7c19c69d0e1ac9",
+          "url": "https://static.crates.io/crates/xkbcommon/0.8.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "xkbcommon",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.8.0"
+    },
     "xkeysym 0.2.1": {
       "common_attrs": {
+        "crate_features": [
+          "bytemuck"
+        ],
+        "deps": [
+          {
+            "id": "bytemuck 1.25.2",
+            "target": "bytemuck"
+          }
+        ],
         "edition": "2018"
       },
       "library_target_name": "xkeysym",
@@ -9952,7 +10203,9 @@
     "egui 0.36.2",
     "egui-wgpu 0.36.2",
     "env_logger 0.11.11",
+    "freedesktop-desktop-entry 0.8.3",
     "log 0.4.34",
+    "nucleo-matcher 0.3.1",
     "pollster 1.0.1",
     "raw-window-handle 0.6.2",
     "serde 1.0.229",

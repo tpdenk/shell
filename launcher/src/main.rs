@@ -1,5 +1,6 @@
 //! Application launcher.
 
+mod entries;
 mod launcher;
 
 use anyhow::Result;
@@ -7,6 +8,7 @@ use config::File;
 use serde::{Deserialize, Serialize};
 use wayland::{Anchor, KeyboardInteractivity, Layer, LayerConfig, Margin};
 
+use crate::entries::Catalog;
 use crate::launcher::Launcher;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -15,6 +17,9 @@ pub struct Config {
     /// Surface size in logical pixels, centered on the output.
     pub width: u32,
     pub height: u32,
+    /// Command that runs `Terminal=true` entries. The application's command
+    /// line is appended.
+    pub terminal: String,
 }
 
 impl Default for Config {
@@ -22,6 +27,7 @@ impl Default for Config {
         Config {
             width: 640,
             height: 400,
+            terminal: "xdg-terminal-exec".to_owned(),
         }
     }
 }
@@ -45,6 +51,6 @@ fn main() -> Result<()> {
     };
     wayland::run(layer, |ctx| {
         ui::install(ctx);
-        Box::new(Launcher::new())
+        Box::new(Launcher::new(Catalog::load(config.terminal)))
     })
 }

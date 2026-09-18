@@ -1,4 +1,4 @@
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,6 +14,15 @@ rust_binary(
         "@crates//:anyhow",
         "@crates//:egui",
         "@crates//:env_logger",
+        "@crates//:freedesktop-desktop-entry",
+        "@crates//:log",
+        "@crates//:nucleo-matcher",
         "@crates//:serde",
     ],
+)
+
+rust_test(
+    name = "launcher_test",
+    size = "small",
+    crate = ":launcher",
 )

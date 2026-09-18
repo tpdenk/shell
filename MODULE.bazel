@@ -48,16 +48,20 @@ crate.spec(
     version = "0.4.34",
 )
 
-# Wayland client stack (wlr-layer-shell). Default features are off to drop
-# `xkbcommon`, which links libxkbcommon via pkg-config. `calloop` provides
-# the event loop. `system` selects the libwayland-client backend, required
-# because Vulkan's Wayland WSI needs a real `wl_display *`. The `dlopen`
-# feature below loads that library at runtime, so nothing links at build time.
+# Wayland client stack (wlr-layer-shell). Default features are off and every
+# feature is opted into explicitly. `calloop` provides the event loop.
+# `system` selects the libwayland-client backend, required because Vulkan's
+# Wayland WSI needs a real `wl_display *`. The `dlopen` feature below loads
+# that library at runtime. `xkbcommon` translates key codes to keysyms and
+# text. It links the host's libxkbcommon.so at build time, located by sctk's
+# build script through the host pkg-config. Like glibc, it is one of the few
+# host libraries the otherwise hermetic toolchain depends on.
 crate.spec(
     default_features = False,
     features = [
         "calloop",
         "system",
+        "xkbcommon",
     ],
     package = "smithay-client-toolkit",
     version = "0.21.1",
@@ -98,6 +102,19 @@ crate.spec(
     default_features = False,
     package = "egui-wgpu",
     version = "0.36.2",
+)
+
+# Launcher: desktop entry parsing and fuzzy matching. The `gettext` feature
+# of freedesktop-desktop-entry links a C library and is off. The rest of its
+# dependency tree is pure Rust.
+crate.spec(
+    default_features = False,
+    package = "freedesktop-desktop-entry",
+    version = "0.8.3",
+)
+crate.spec(
+    package = "nucleo-matcher",
+    version = "0.3.1",
 )
 
 # Hyprland IPC replies (`//crates/hypr`).

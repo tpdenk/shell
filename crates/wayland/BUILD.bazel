@@ -1,4 +1,4 @@
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,4 +15,10 @@ rust_library(
         "@crates//:smithay-client-toolkit",
         "@crates//:wgpu",
     ],
+)
+
+rust_test(
+    name = "wayland_test",
+    size = "small",
+    crate = ":wayland",
 )

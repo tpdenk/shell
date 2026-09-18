@@ -3,7 +3,11 @@
 //! Files live under `$XDG_CONFIG_HOME/shell/`, falling back to
 //! `~/.config/shell/`. A component defines its config struct, implements
 //! [`File`] with the file's name, and calls `load()`. When the file does not
-//! exist it is written from `Default` so there is something to edit.
+//! exist it is written from `Default` so there is something to edit. When it
+//! exists but lacks keys, those are appended with their defaults, so every
+//! option is visible in the file without disturbing what the user wrote.
+
+mod extend;
 
 use std::fs;
 use std::io::ErrorKind;
@@ -28,9 +32,9 @@ pub trait File: Default + Serialize + DeserializeOwned {
         path(Self::NAME)
     }
 
-    /// Reads the file, creating it from the defaults when it is missing. A
-    /// file that exists but does not parse is an error, not a silent
-    /// fallback.
+    /// Reads the file, creating it from the defaults when it is missing and
+    /// appending any keys it lacks. A file that exists but does not parse is
+    /// an error, not a silent fallback.
     fn load() -> Result<Self> {
         load_from(&Self::path()?)
     }
@@ -48,7 +52,15 @@ pub fn path(name: &str) -> Result<PathBuf> {
 pub fn load_from<T: Default + Serialize + DeserializeOwned>(path: &Path) -> Result<T> {
     match fs::read_to_string(path) {
         Ok(text) => {
-            serde_saphyr::from_str(&text).with_context(|| format!("parsing {}", path.display()))
+            let config: T =
+                serde_saphyr::from_str(&text).with_context(|| format!("parsing {}", path.display()))?;
+            let defaults = serialize(&T::default())?;
+            if let Some(extended) = extend::extend(&text, &defaults)
+                .with_context(|| format!("extending {}", path.display()))?
+            {
+                fs::write(path, extended).with_context(|| format!("writing {}", path.display()))?;
+            }
+            Ok(config)
         }
         Err(err) if err.kind() == ErrorKind::NotFound => {
             let config = T::default();
@@ -59,12 +71,15 @@ pub fn load_from<T: Default + Serialize + DeserializeOwned>(path: &Path) -> Resu
     }
 }
 
+fn serialize<T: Serialize>(config: &T) -> Result<String> {
+    serde_saphyr::to_string(config).context("serializing default config")
+}
+
 fn write<T: Serialize>(config: &T, path: &Path) -> Result<()> {
     if let Some(dir) = path.parent() {
         fs::create_dir_all(dir).with_context(|| format!("creating {}", dir.display()))?;
     }
-    let text = serde_saphyr::to_string(config).context("serializing default config")?;
-    fs::write(path, text).with_context(|| format!("writing {}", path.display()))
+    fs::write(path, serialize(config)?).with_context(|| format!("writing {}", path.display()))
 }
 
 #[cfg(test)]
@@ -126,10 +141,22 @@ mod tests {
     }
 
     #[test]
-    fn partial_file_keeps_other_defaults() {
-        let config: Test = serde_saphyr::from_str("height: 40\n").unwrap();
+    fn partial_file_keeps_its_values_and_gains_the_missing_keys() {
+        let path = scratch("partial");
+        let _ = fs::remove_dir_all(path.parent().unwrap());
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(&path, "# mine\nheight: 40\n").unwrap();
+
+        let config: Test = load_from(&path).unwrap();
         assert_eq!(config.height, 40);
         assert_eq!(config.nested, Nested::default());
+
+        let text = fs::read_to_string(&path).unwrap();
+        assert_eq!(text, "# mine\nheight: 40\nnested:\n  enabled: true\n");
+        let again: Test = load_from(&path).unwrap();
+        assert_eq!(again, config);
+        assert_eq!(fs::read_to_string(&path).unwrap(), text);
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
     }
 
     #[test]
